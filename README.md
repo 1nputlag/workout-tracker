@@ -5,7 +5,7 @@
 
 Курсова робота «Розробка web застосунку для трекінгу тренувань (workout tracker)», ЛНУ імені Івана Франка.
 
-![CI](https://github.com/<ваш-логін>/workout-tracker/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/<1nputlag>/workout-tracker/actions/workflows/ci.yml/badge.svg)
 
 ## Стек
 
@@ -53,5 +53,4 @@ cd e2e && npm ci && npx playwright install && npm test   # потрібен за
 ## Документація
 
 - [Вимоги та беклог](docs/requirements.md)
-- [Як працювати з Git у цьому репозиторії](docs/GIT_GUIDE.md)
 - Діаграми й макети: `docs/diagrams`, `docs/ui_screens`
