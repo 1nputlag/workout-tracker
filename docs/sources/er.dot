@@ -1,0 +1,19 @@
+digraph G { rankdir=TB; nodesep=0.35; ranksep=0.8;
+ node [shape=record, fontname="Liberation Serif", fontsize=14]; edge [fontname="Liberation Serif", fontsize=13, arrowhead=none];
+ User [label="{User|+ id : UUID (PK)\l+ email : string (unique)\l+ passwordHash : string\l+ displayName : string\l+ weightUnit : enum(kg, lb)\l+ createdAt : datetime\l}"];
+ MuscleGroup [label="{MuscleGroup|+ id : int (PK)\l+ name : string (unique)\l}"];
+ Exercise [label="{Exercise|+ id : UUID (PK)\l+ name : string\l+ muscleGroupId : int (FK)\l+ ownerId : UUID (FK, null = загальна)\l}"];
+ Program [label="{Program|+ id : UUID (PK)\l+ userId : UUID (FK)\l+ name : string\l}"];
+ ProgramExercise [label="{ProgramExercise|+ id : UUID (PK)\l+ programId : UUID (FK)\l+ exerciseId : UUID (FK)\l+ position : int\l+ targetSets : int\l+ targetReps : int\l}"];
+ Workout [label="{Workout|+ id : UUID (PK)\l+ userId : UUID (FK)\l+ programId : UUID (FK, null)\l+ status : enum\l+ startedAt : datetime\l+ finishedAt : datetime\l}"];
+ WorkoutSet [label="{WorkoutSet|+ id : UUID (PK)\l+ workoutId : UUID (FK)\l+ exerciseId : UUID (FK)\l+ setNumber : int\l+ weightKg : decimal\l+ reps : int\l+ createdAt : datetime\l}"];
+ User -> Program [headlabel="1", taillabel="0..*", labeldistance=2];
+ User -> Workout [headlabel="1", taillabel="0..*", labeldistance=2];
+ User -> Exercise [headlabel="1", taillabel="0..*", labeldistance=2];
+ MuscleGroup -> Exercise [headlabel="0..*", taillabel="1", labeldistance=2];
+ Program -> ProgramExercise [headlabel="0..*", taillabel="1", labeldistance=2];
+ Exercise -> ProgramExercise [headlabel="0..*", taillabel="1", labeldistance=2];
+ Workout -> WorkoutSet [headlabel="0..*", taillabel="1", labeldistance=2];
+ Exercise -> WorkoutSet [headlabel="0..*", taillabel="1", labeldistance=2];
+ Program -> Workout [headlabel="0..*", taillabel="0..1", labeldistance=2, style=dashed];
+}

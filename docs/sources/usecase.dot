@@ -1,0 +1,12 @@
+digraph G { rankdir=LR; nodesep=0.3; ranksep=1.0;
+ node [fontname="Liberation Serif", fontsize=19]; edge [fontname="Liberation Serif", fontsize=16, arrowhead=none];
+ A [label="Користувач", shape=box, style="rounded"];
+ subgraph cluster_s { label="Вебзастосунок «Workout tracker»"; fontname="Liberation Serif"; fontsize=15;
+  node [shape=ellipse];
+  u1 [label="Реєстрація та вхід"]; u2 [label="Керування профілем"]; u3 [label="Керування бібліотекою вправ"];
+  u4 [label="Створення тренувальних\nпрограм"]; u5 [label="Журналювання тренування"]; u6 [label="Перегляд історії"]; u7 [label="Перегляд прогресу\nта статистики"];
+  u8 [label="Додавання підходу"]; u9 [label="Розрахунок показників\nнавантаження"]; u10 [label="Автентифікація"]; }
+ A -> u1; A -> u2; A -> u3; A -> u4; A -> u5; A -> u6; A -> u7;
+ u5 -> u8 [style=dashed, arrowhead=vee, label="«include»"]; u7 -> u9 [style=dashed, arrowhead=vee, label="«include»"];
+ u1 -> u10 [style=dashed, arrowhead=vee, label="«include»"];
+}

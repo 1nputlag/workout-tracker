@@ -1,0 +1,10 @@
+digraph G { rankdir=TB; nodesep=0.4; ranksep=0.4;
+ node [fontname="Liberation Serif", fontsize=14, shape=box, margin="0.14,0.07"]; edge [fontname="Liberation Serif", fontsize=13];
+ s [shape=ellipse, label="Головна: «Прогрес»"]; a [label="Показники тижня:\nтоннаж, тренування, підходи, 1ПМ"];
+ p [label="Обрати період\n(4, 8 або 12 тижнів)"]; x [label="Обрати вправу"]; g [label="Графік динаміки оцінки 1ПМ\nі підходи за групами м'язів"];
+ d1 [shape=diamond, label="Є дані\nза період?"]; em [label="Показати порожній стан\nз пропозицією почати тренування"];
+ d2 [shape=diamond, label="Є підказка\nпрогресії?"]; t [label="Показати картку підказки"];
+ d3 [shape=diamond, label="Наступна дія"]; W [shape=ellipse, label="Нове тренування"]; Hh [shape=ellipse, label="Історія тренувань"];
+ s -> a -> p -> x -> d1; d1 -> em [label="ні"]; d1 -> g [label="так"]; g -> d2; d2 -> t [label="так"]; d2 -> d3 [label="ні"]; t -> d3;
+ d3 -> W [label="почати тренування"]; d3 -> Hh [label="переглянути історію"]; d3 -> p [label="змінити фільтр", constraint=false];
+}

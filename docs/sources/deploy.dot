@@ -1,0 +1,12 @@
+digraph G { rankdir=TB; nodesep=0.5; ranksep=0.7; compound=true;
+ node [shape=box, fontname="Liberation Serif", fontsize=15, margin="0.18,0.1"]; edge [fontname="Liberation Serif", fontsize=13];
+ B [label="Браузер користувача\n(комп'ютер, планшет, смартфон)", style=rounded];
+ subgraph cluster_h { label="Сервер розгортання (Docker Compose)"; fontname="Liberation Serif"; fontsize=15; style=dashed;
+   W [label="Контейнер web\nстатичні файли клієнта (React)\nта зворотний проксі"];
+   A [label="Контейнер api\nNode.js + Express + Prisma"];
+   D [label="Контейнер db\nPostgreSQL", shape=cylinder];
+   V [label="Том даних\n(pgdata)", shape=folder];
+ }
+ B -> W [label=" HTTPS "]; W -> A [label=" HTTP, /api "]; A -> D [label=" TCP 5432 (SQL) "]; D -> V [label=" зберігання "];
+ E [label="Файл .env\n(DATABASE_URL, секрет JWT)", shape=note]; E -> A [style=dashed, label=" змінні середовища "];
+}

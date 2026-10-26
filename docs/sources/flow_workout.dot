@@ -1,0 +1,12 @@
+digraph G { rankdir=TB; nodesep=0.4; ranksep=0.38;
+ node [fontname="Liberation Serif", fontsize=14, shape=box, margin="0.14,0.07"]; edge [fontname="Liberation Serif", fontsize=13];
+ s [shape=ellipse, label="Головна: «Нове тренування»"]; d1 [shape=diamond, label="Як почати?"];
+ p [label="Обрати програму"]; q [label="Швидкий старт\n(порожнє тренування)"];
+ J [label="Екран журналу тренування\nстан: «Виконується»"]; e [label="Обрати вправу з бібліотеки\nабо з програми"];
+ in [shape=parallelogram, label="Ввести вагу й повторення"]; sv [label="«Зберегти підхід»:\nпідхід у списку, оновлено підсумок"];
+ d2 [shape=diamond, label="Ще підхід\nу цій вправі?"]; d3 [shape=diamond, label="Ще вправа?"];
+ f [label="«Завершити тренування»"]; d4 [shape=diamond, label="Є хоча б\nодин підхід?"]; w [label="Повідомлення:\nдодайте підхід або скасуйте"];
+ ok [label="Стан «Завершене»,\nзбереження підсумку"]; H [shape=ellipse, label="Історія тренувань"];
+ s -> d1; d1 -> p [label="за програмою"]; d1 -> q [label="без програми"]; p -> J; q -> J; J -> e; e -> in; in -> sv; sv -> d2;
+ d2 -> in [label="так"]; d2 -> d3 [label="ні"]; d3 -> e [label="так"]; d3 -> f [label="ні"]; f -> d4; d4 -> w [label="ні"]; w -> J [style=dashed, constraint=false]; d4 -> ok [label="так"]; ok -> H;
+}

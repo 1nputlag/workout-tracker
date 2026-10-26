@@ -1,0 +1,15 @@
+digraph G { rankdir=TB; nodesep=0.3; ranksep=0.55; newrank=true;
+ node [shape=box, fontname="Liberation Serif", fontsize=15, margin="0.12,0.07"]; edge [fontname="Liberation Serif", fontsize=13];
+ U [label="Користувач (браузер)", style=rounded];
+ subgraph cluster_c { label="Клієнтська частина (React + TypeScript + Vite)"; fontname="Liberation Serif"; fontsize=15;
+   P [label="Сторінки та\nмаршрути\n(React Router)"]; FM [label="Форми та\nвалідація\n(Zod)"]; G [label="Графіки\n(Recharts)"]; Q [label="Шар даних\n(TanStack Query)"]; }
+ subgraph cluster_s { label="Серверна частина (Node.js + Express + TypeScript)"; fontname="Liberation Serif"; fontsize=15;
+   R [label="REST-\nмаршрути"]; AU [label="Автентифікація\n(JWT)"]; VZ [label="Валідація\n(Zod)"]; SV [label="Сервіси\n(розрахунок\nпоказників)"]; OR [label="Доступ до даних\n(Prisma ORM)"]; }
+ DB [label="PostgreSQL", shape=cylinder];
+ {rank=same; P; FM; Q; G}
+ {rank=same; R; AU; VZ}
+ {rank=same; SV; OR}
+ U -> P; P -> FM; FM -> Q; Q -> G [dir=both];
+ Q -> R [label=" HTTPS, JSON ", dir=both];
+ R -> AU -> VZ; VZ -> SV; SV -> OR; OR -> DB [dir=both, label=" SQL "];
+}

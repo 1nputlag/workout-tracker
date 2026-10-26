@@ -1,0 +1,19 @@
+%%{init: {'theme':'neutral','themeVariables':{'fontFamily':'Liberation Serif, Times New Roman','fontSize':'22px'},'sequence':{'actorMargin':30,'width':120,'wrap':true,'messageMargin':26,'boxMargin':6}}}%%
+sequenceDiagram
+    actor U as Користувач
+    participant F as Клієнт
+    participant A as API
+    participant S as Сервіс статистики
+    participant D as БД
+    U->>F: обирає період і вправу
+    F->>F: перевірка кешу запитів
+    F->>A: GET /api/stats/progress?from&to&exerciseId (JWT)
+    A->>A: перевірка JWT і параметрів (Zod)
+    A->>S: getProgress(userId, from, to, exerciseId)
+    S->>D: вибірка підходів користувача за період
+    D-->>S: підходи з групами м'язів
+    S->>S: тоннаж, тижневий обсяг, оцінка 1ПМ, підказка
+    S-->>A: показники
+    A-->>F: 200 OK + JSON
+    F->>F: запис у кеш
+    F-->>U: графіки та підказка прогресії

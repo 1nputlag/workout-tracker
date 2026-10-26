@@ -1,0 +1,12 @@
+digraph G { rankdir=TB; nodesep=0.4; ranksep=0.4;
+ node [fontname="Liberation Serif", fontsize=14, shape=box, margin="0.14,0.07"]; edge [fontname="Liberation Serif", fontsize=13];
+ s [shape=ellipse, label="Відкрити застосунок"]; d1 [shape=diamond, label="Є чинний\nтокен?"];
+ L [label="Екран входу й реєстрації"]; d2 [shape=diamond, label="Вибір дії"];
+ r [label="Заповнити пошту й пароль\n(реєстрація)"]; i [label="Заповнити пошту й пароль\n(вхід)"];
+ v [label="Клієнтська перевірка форми"]; d3 [shape=diamond, label="Дані\nкоректні?"]; err [label="Показати помилку\nбіля поля"];
+ srv [label="Запит до сервера"]; d4 [shape=diamond, label="Сервер\nприйняв?"]; err2 [label="Показати повідомлення\n(неправильний пароль,\nпошта вже зайнята)"];
+ t [label="Зберегти токен,\nзавантажити профіль"]; H [shape=ellipse, label="Головна: прогрес"];
+ s -> d1; d1 -> H [label="так"]; d1 -> L [label="ні"]; L -> d2; d2 -> i [label="вхід"]; d2 -> r [label="реєстрація"];
+ i -> v; r -> v; v -> d3; d3 -> err [label="ні"]; err -> v [style=dashed, constraint=false]; d3 -> srv [label="так"];
+ srv -> d4; d4 -> err2 [label="ні"]; d4 -> t [label="так"]; t -> H; err2 -> L [style=dashed, constraint=false];
+}

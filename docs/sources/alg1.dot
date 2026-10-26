@@ -1,0 +1,11 @@
+digraph G { nodesep=0.4; ranksep=0.35;
+ node [fontname="Liberation Serif", fontsize=14, shape=box, margin="0.15,0.07"]; edge [fontname="Liberation Serif", fontsize=13];
+ s [shape=ellipse, label="Початок"]; i [shape=parallelogram, label="Вхід: userId, період [from, to]"];
+ q [label="Вибрати підходи користувача за період\nразом із групою м'язів вправи"];
+ d [shape=diamond, label="Є підходи?"]; z [label="Повернути порожній\nрезультат"];
+ l [label="Для кожного підходу:\nтоннаж = вага × повторення"];
+ w [label="Згрупувати за (тиждень, група м'язів):\nобсяг = кількість підходів,\nтоннаж = сума тоннажів"];
+ e [label="Для підходів із повторень < 10: оцінка 1ПМ =\nвага × (1 + повторення / 30);\nза день береться максимум"];
+ o [shape=parallelogram, label="Вивід: тижневий обсяг, тоннаж,\nдинаміка оціночного 1ПМ"]; f [shape=ellipse, label="Кінець"];
+ s -> i -> q -> d; d -> z [label="ні"]; d -> l [label="так"]; l -> w -> e -> o -> f; z -> f;
+}

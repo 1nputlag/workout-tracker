@@ -1,0 +1,25 @@
+%%{init: {'theme':'neutral','themeVariables':{'fontFamily':'Liberation Serif, Times New Roman','fontSize':'22px'},'sequence':{'actorMargin':30,'width':120,'wrap':true,'messageMargin':26,'boxMargin':6}}}%%
+sequenceDiagram
+    actor U as Користувач
+    participant F as Клієнт
+    participant A as API
+    participant S as Сервіс автентифікації
+    participant D as БД
+    U->>F: вводить пошту й пароль, «Увійти»
+    F->>A: POST /api/auth/login
+    A->>A: перевірка тіла запиту (Zod)
+    A->>S: login(email, password)
+    S->>D: пошук користувача за поштою
+    D-->>S: користувач і хеш пароля
+    alt користувача немає або пароль хибний
+        S-->>A: помилка автентифікації
+        A-->>F: 401 Unauthorized
+        F-->>U: повідомлення про помилку
+    else облікові дані вірні
+        S->>S: порівняння пароля з хешем (bcrypt)
+        S->>S: створення токена JWT
+        S-->>A: токен і профіль
+        A-->>F: 200 OK + токен
+        F->>F: збереження токена
+        F-->>U: перехід на головну
+    end

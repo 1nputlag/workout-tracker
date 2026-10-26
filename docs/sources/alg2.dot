@@ -1,0 +1,12 @@
+digraph G { nodesep=0.4; ranksep=0.35;
+ node [fontname="Liberation Serif", fontsize=14, shape=box, margin="0.15,0.07"]; edge [fontname="Liberation Serif", fontsize=13];
+ s [shape=ellipse, label="Початок"]; i [shape=parallelogram, label="Вхід: userId, exerciseId,\nцільовий діапазон повторень [lo, hi]"];
+ q [label="Взяти підходи двох останніх завершених\nтренувань з цією вправою"];
+ d1 [shape=diamond, label="Є дані\nпринаймні за 2 тренування?"]; n [label="Повернути «недостатньо даних»"];
+ m [label="Для кожного з двох тренувань\nвизначити робочу вагу W (найбільша вага)\nі найменшу кількість повторень R\nу підходах з вагою W"];
+ d2 [shape=diamond, label="В обох тренуваннях\nR ≥ hi?"]; up [label="Запропонувати W_new = W × (1,02…1,10)\nпід кроком дисків (округлити)"];
+ d3 [shape=diamond, label="В останньому тренуванні\nR < lo?"]; keep [label="Запропонувати збільшувати\nповторення з тією самою вагою W"]; dn [label="Запропонувати залишити\nабо дещо знизити вагу W"];
+ o [shape=parallelogram, label="Вивід: рекомендація\n(лише підказка користувачу)"]; f [shape=ellipse, label="Кінець"];
+ s -> i -> q -> d1; d1 -> n [label="ні"]; d1 -> m [label="так"]; m -> d2; d2 -> up [label="так"]; d2 -> d3 [label="ні"];
+ d3 -> dn [label="так"]; d3 -> keep [label="ні"]; up -> o; keep -> o; dn -> o; n -> f; o -> f;
+}

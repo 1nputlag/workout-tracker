@@ -1,0 +1,10 @@
+digraph G { rankdir=TB; nodesep=0.5; ranksep=0.7;
+ node [fontname="Liberation Serif", fontsize=15, shape=box, style=rounded]; edge [fontname="Liberation Serif", fontsize=13];
+ s [shape=circle, label="", width=0.25, style=filled, fillcolor=black];
+ e [shape=doublecircle, label="", width=0.2, style=filled, fillcolor=black];
+ N [label="Заплановане"]; A [label="Виконується"]; F [label="Завершене"]; X [label="Скасоване"];
+ s -> N [label="створення\nз програми"]; s -> A [label="швидкий\nстарт"];
+ N -> A [label="«Почати»"]; A -> A [label="додати / змінити /\nвидалити підхід"];
+ A -> F [label="«Завершити»\n[є ≥ 1 підхід]"]; A -> X [label="«Скасувати»"]; N -> X [label="«Скасувати»"];
+ F -> A [label="«Редагувати»", constraint=false]; F -> e; X -> e;
+}

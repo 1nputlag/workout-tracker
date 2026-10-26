@@ -1,0 +1,29 @@
+%%{init: {'theme':'neutral','themeVariables':{'fontFamily':'Liberation Serif, Times New Roman','fontSize':'22px'},'sequence':{'actorMargin':30,'width':120,'wrap':true,'messageMargin':26,'boxMargin':6}}}%%
+sequenceDiagram
+    actor U as Користувач
+    participant F as Клієнт
+    participant A as API
+    participant V as Zod-валідація
+    participant S as Сервіс
+    participant D as БД
+    U->>F: вводить вагу й повторення, «Зберегти»
+    F->>A: POST /api/workouts/:id/sets (JWT)
+    A->>A: перевірка JWT, визначення userId
+    A->>V: перевірка тіла запиту
+    alt дані некоректні
+        V-->>A: помилка валідації
+        A-->>F: 400 + опис помилок
+        F-->>U: повідомлення біля поля
+    else дані коректні
+        V-->>A: типізований об'єкт
+        A->>S: addSet(userId, workoutId, data)
+        S->>D: чи тренування належить користувачу
+        D-->>S: тренування
+        S->>D: INSERT підхід
+        D-->>S: збережений підхід
+        S->>S: розрахунок тоннажу та 1ПМ
+        S-->>A: підхід + показники
+        A-->>F: 201 Created
+        F->>F: оновлення кешу
+        F-->>U: підхід у списку, графік
+    end
