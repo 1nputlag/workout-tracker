@@ -53,5 +53,4 @@ cd e2e && npm ci && npx playwright install && npm test   # потрібен за
 ## Документація
 
 - [Вимоги та беклог](docs/requirements.md)
-- [Як працювати з Git у цьому репозиторії](docs/GIT_GUIDE.md)
 - Діаграми й макети: `docs/diagrams`, `docs/ui_screens`
