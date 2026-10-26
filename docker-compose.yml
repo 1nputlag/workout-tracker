@@ -1,0 +1,47 @@
+# Запуск усієї системи однією командою: docker compose up --build
+# Перед першим запуском: cp .env.example .env і задайте JWT_SECRET та POSTGRES_PASSWORD
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?задайте POSTGRES_PASSWORD у файлі .env}
+      POSTGRES_DB: ${POSTGRES_DB:-workout}
+    volumes:
+      - pgdata:/var/lib/postgresql/data   # окремий том: дані переживають оновлення контейнерів
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-app} -d ${POSTGRES_DB:-workout}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  server:
+    build: ./server
+    environment:
+      JWT_SECRET: ${JWT_SECRET:?задайте JWT_SECRET у файлі .env}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-workout}
+      PORT: "3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  client:
+    build: ./client
+    ports:
+      - "8080:80"
+    depends_on:
+      server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
