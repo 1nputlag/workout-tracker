@@ -5,7 +5,7 @@
 
 Курсова робота «Розробка web застосунку для трекінгу тренувань (workout tracker)», ЛНУ імені Івана Франка.
 
-![CI](https://github.com/<1nputlag>/workout-tracker/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/1nputlag/workout-tracker/actions/workflows/ci.yml/badge.svg)
 
 ## Стек
 
