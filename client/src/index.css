@@ -1,0 +1,51 @@
+@import 'tailwindcss';
+
+/* Дизайн-токени з Figma (сторінка Components): кольори, шрифти, радіуси */
+@theme {
+  --color-ink: #15171a;
+  --color-lime: #c8f13c;
+  --color-lime-soft: #f5f7ea;
+  --color-page: #f3f1ec;
+  --color-sand: #e7e3d9;
+  --color-line: #c9c4b8;
+  --color-slate: #4b5058;
+  --color-mist: #d6d9de;
+  --color-danger: #b3261e;
+  --color-ok: #3d5a00;
+
+  --font-sans: 'Fira Sans', system-ui, sans-serif;
+  --font-display: 'Fira Sans Condensed', 'Fira Sans', system-ui, sans-serif;
+
+  --radius-xs: 6px;
+  --radius-sm: 9px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+}
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    @apply bg-page text-ink font-sans antialiased;
+    font-feature-settings: 'tnum' 1; /* табличні цифри — числа в стовпцях не «стрибають» */
+  }
+  :focus-visible { outline: 3px solid var(--color-ink); outline-offset: 2px; }
+  input, select, button { font: inherit; }
+}
+
+/* Повторювані елементи інтерфейсу (компоненти з Figma). У Tailwind 4 це власні утиліти (@utility). */
+@utility h-display { @apply font-display font-extrabold uppercase leading-[0.95] tracking-[-0.01em]; }
+@utility card { @apply rounded-lg border border-line/70 bg-white; }
+@utility label { @apply text-sm font-medium text-slate; }
+@utility field {
+  @apply min-h-11 w-full rounded-md border border-line bg-white px-4 text-base text-ink;
+  @apply placeholder:text-slate/80 focus:border-ink focus:outline-none aria-invalid:border-danger aria-invalid:border-2;
+}
+@utility btn { @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-5 font-semibold transition-colors disabled:opacity-60; }
+@utility btn-dark { @apply btn bg-ink text-white hover:bg-ink/85; }
+@utility btn-lime { @apply btn bg-lime text-ink hover:bg-[#b9e22d]; }
+@utility btn-ghost { @apply btn border border-line bg-white text-ink hover:bg-sand/60; }
+@utility chip {
+  @apply inline-flex min-h-11 items-center rounded-full border border-line bg-white px-5 font-semibold;
+  @apply aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-white;
+}
+@utility badge { @apply inline-flex items-center rounded-full bg-sand px-3 py-1 text-sm font-semibold; }
