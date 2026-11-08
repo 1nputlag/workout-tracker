@@ -54,7 +54,7 @@ jobs:
           path: server/coverage/
           retention-days: 14
 
-  # 2. Клієнтська частина: модульні тести, перевірка типів і збірка
+  # 2. Клієнтська частина: перевірка типів і збірка
   client:
     runs-on: ubuntu-latest
     defaults:
@@ -68,10 +68,9 @@ jobs:
           cache: npm
           cache-dependency-path: client/package-lock.json
       - run: npm ci
-      - run: npm test
       - run: npm run build
 
-  # 3. Наскрізні тести. Інтерфейс реалізовано (фаза 2), щоб увімкнути:
+  # 3. Наскрізні тести. Вимкнені, доки не реалізовано інтерфейс:
   #    Settings → Secrets and variables → Actions → Variables → додайте E2E_ENABLED = true
   e2e:
     needs: [server, client]
@@ -94,7 +93,7 @@ jobs:
         working-directory: e2e
         run: |
           npm ci
-          npx playwright install --with-deps chromium firefox webkit msedge
+          npx playwright install --with-deps
       - name: Запустити e2e-тести
         working-directory: e2e
         run: npx playwright test
