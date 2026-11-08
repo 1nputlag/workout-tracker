@@ -12,7 +12,7 @@
 | Частина | Технології |
 |---|---|
 | Сервер | Node.js, Express, TypeScript, Zod, JWT, bcrypt, Prisma 7 + PostgreSQL |
-| Клієнт | React, Vite, TypeScript; Tailwind, TanStack Query, Recharts (додаються на етапах 7–8) |
+| Клієнт | React, Vite, TypeScript, Tailwind CSS 4, TanStack Query, React Router, Recharts |
 | Тести | Vitest, Supertest (unit + API), Playwright (e2e) |
 | Розгортання | Docker Compose, GitHub Actions |
 
@@ -60,7 +60,9 @@ cd server && npm run test:cov     # з покриттям (пороги в vites
 docker compose exec db createdb -U app workout_test
 cd server && DATABASE_URL=postgresql://app:<пароль>@localhost:5433/workout_test npm run db:deploy
 TEST_DATABASE_URL=postgresql://app:<пароль>@localhost:5433/workout_test npm test
-cd e2e && npm ci && npx playwright install && npm test   # потрібен запущений застосунок
+cd client && npm test             # модульні тести клієнта (форматування, одиниці, дати)
+cd e2e && npm ci && npx playwright install && npm test   # потрібен запущений застосунок (docker compose up)
+# або проти режиму розробки: BASE_URL=http://localhost:5173 npx playwright test --project=chromium
 ```
 
 ## Документація
