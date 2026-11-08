@@ -16,20 +16,23 @@ env:
   IMAGE_PREFIX: ghcr.io/${{ github.repository }}
 
 jobs:
-  # 1. Серверна частина: типи, модульні та інтеграційні тести, пороги покриття (server/vitest.config.ts)
+  # 1. Серверна частина: міграції, типи, модульні та інтеграційні тести на PostgreSQL, пороги покриття
   server:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: server
-    # Після підключення Prisma розкоментуйте PostgreSQL для інтеграційних тестів:
-    # services:
-    #   postgres:
-    #     image: postgres:16
-    #     env: { POSTGRES_USER: app, POSTGRES_PASSWORD: app, POSTGRES_DB: workout_test }
-    #     ports: ['5432:5432']
-    #     options: >-
-    #       --health-cmd "pg_isready -U app" --health-interval 5s --health-timeout 5s --health-retries 10
+    # Інтеграційні тести працюють зі справжньою PostgreSQL (INF-01)
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_USER: app, POSTGRES_PASSWORD: app, POSTGRES_DB: workout_test }
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U app" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://app:app@localhost:5432/workout_test
+      TEST_DATABASE_URL: postgresql://app:app@localhost:5432/workout_test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -37,7 +40,11 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
           cache-dependency-path: server/package-lock.json
-      - run: npm ci
+      - run: npm ci                       # postinstall: prisma generate
+      - name: Застосувати міграції
+        run: npm run db:deploy
+      - name: Перевірити, що міграції відповідають schema.prisma
+        run: npm run db:check
       - run: npm run typecheck
       - run: npm run test:cov
       - uses: actions/upload-artifact@v4
@@ -47,7 +54,7 @@ jobs:
           path: server/coverage/
           retention-days: 14
 
-  # 2. Клієнтська частина: перевірка типів і збірка
+  # 2. Клієнтська частина: модульні тести, перевірка типів і збірка
   client:
     runs-on: ubuntu-latest
     defaults:
@@ -61,9 +68,10 @@ jobs:
           cache: npm
           cache-dependency-path: client/package-lock.json
       - run: npm ci
+      - run: npm test
       - run: npm run build
 
-  # 3. Наскрізні тести. Вимкнені, доки не реалізовано інтерфейс:
+  # 3. Наскрізні тести. Інтерфейс реалізовано (фаза 2), щоб увімкнути:
   #    Settings → Secrets and variables → Actions → Variables → додайте E2E_ENABLED = true
   e2e:
     needs: [server, client]
@@ -86,7 +94,7 @@ jobs:
         working-directory: e2e
         run: |
           npm ci
-          npx playwright install --with-deps
+          npx playwright install --with-deps chromium firefox webkit msedge
       - name: Запустити e2e-тести
         working-directory: e2e
         run: npx playwright test
