@@ -23,12 +23,18 @@ test.describe('Прогрес і бібліотека вправ', () => {
   test('E2E-14: бібліотека вправ: пошук і фільтр за групою м’язів працюють разом', async ({ page }) => {
     await registerViaUi(page);
     await page.goto('/exercises');
-    const all = await page.getByTestId('exercise-card').count();
+    const cards = page.getByTestId('exercise-card');
+    await expect(cards.first()).toBeVisible(); // count() не чекає завантаження списку
+    const all = await cards.count();
     await page.getByRole('button', { name: 'Груди' }).click();
-    const chest = await page.getByTestId('exercise-card').count();
+    await expect.poll(() => cards.count()).toBeLessThan(all);
+    const chest = await cards.count();
     expect(chest).toBeGreaterThan(0);
-    expect(chest).toBeLessThan(all);
     await page.getByRole('searchbox', { name: 'Пошук вправи' }).fill('жим');
-    await expect(page.getByTestId('exercise-card').first()).toContainText(/жим/i);
+    await expect.poll(() => cards.count()).toBeLessThanOrEqual(chest);
+    for (const text of await cards.allInnerTexts()) {
+      expect(text).toMatch(/жим/i);
+      expect(text).toContain('Груди');
+    }
   });
 });

@@ -26,7 +26,7 @@ test.describe('Журналювання тренування', () => {
   test('E2E-09: завершене тренування з’являється в історії', async ({ page }) => {
     await page.getByRole('button', { name: 'Нове тренування' }).click();
     await page.getByRole('menuitem', { name: 'Швидкий старт' }).click();
-    await addSetViaUi(page, 'Присідання', '100', '5');
+    await addSetViaUi(page, 'Присідання зі штангою', '100', '5');
     await page.getByRole('button', { name: 'Завершити тренування' }).click();
     await expect(page).toHaveURL(/history/);
     await expect(page.getByTestId('history-item')).toHaveCount(1);
