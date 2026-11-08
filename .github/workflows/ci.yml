@@ -16,20 +16,23 @@ env:
   IMAGE_PREFIX: ghcr.io/${{ github.repository }}
 
 jobs:
-  # 1. Серверна частина: типи, модульні та інтеграційні тести, пороги покриття (server/vitest.config.ts)
+  # 1. Серверна частина: міграції, типи, модульні та інтеграційні тести на PostgreSQL, пороги покриття
   server:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: server
-    # Після підключення Prisma розкоментуйте PostgreSQL для інтеграційних тестів:
-    # services:
-    #   postgres:
-    #     image: postgres:16
-    #     env: { POSTGRES_USER: app, POSTGRES_PASSWORD: app, POSTGRES_DB: workout_test }
-    #     ports: ['5432:5432']
-    #     options: >-
-    #       --health-cmd "pg_isready -U app" --health-interval 5s --health-timeout 5s --health-retries 10
+    # Інтеграційні тести працюють зі справжньою PostgreSQL (INF-01)
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_USER: app, POSTGRES_PASSWORD: app, POSTGRES_DB: workout_test }
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U app" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://app:app@localhost:5432/workout_test
+      TEST_DATABASE_URL: postgresql://app:app@localhost:5432/workout_test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -37,7 +40,11 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
           cache-dependency-path: server/package-lock.json
-      - run: npm ci
+      - run: npm ci                       # postinstall: prisma generate
+      - name: Застосувати міграції
+        run: npm run db:deploy
+      - name: Перевірити, що міграції відповідають schema.prisma
+        run: npm run db:check
       - run: npm run typecheck
       - run: npm run test:cov
       - uses: actions/upload-artifact@v4

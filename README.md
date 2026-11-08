@@ -11,7 +11,7 @@
 
 | Частина | Технології |
 |---|---|
-| Сервер | Node.js, Express, TypeScript, Zod, JWT, bcrypt; Prisma + PostgreSQL (підключається на етапі 6) |
+| Сервер | Node.js, Express, TypeScript, Zod, JWT, bcrypt, Prisma 7 + PostgreSQL |
 | Клієнт | React, Vite, TypeScript; Tailwind, TanStack Query, Recharts (додаються на етапах 7–8) |
 | Тести | Vitest, Supertest (unit + API), Playwright (e2e) |
 | Розгортання | Docker Compose, GitHub Actions |
@@ -35,22 +35,36 @@ cp .env.example .env        # задайте JWT_SECRET і POSTGRES_PASSWORD
 docker compose up --build   # застосунок: http://localhost:8080
 ```
 
-Розробка без Docker (два термінали):
+Розробка (база в Docker, сервер і клієнт — локально з автоперезавантаженням):
 
 ```bash
-cd server && npm ci && JWT_SECRET=dev npm run dev    # http://localhost:3000
-cd client && npm ci && npm run dev                   # http://localhost:5173
+cp .env.example .env                      # задайте JWT_SECRET; DATABASE_URL уже вказує на localhost
+docker compose up -d db                   # лише PostgreSQL на 127.0.0.1:5433
+cd server && npm ci && npm run db:deploy  # залежності, клієнт Prisma і міграції
+npm run dev                               # http://localhost:3000 (довідники заповнюються автоматично)
+cd client && npm ci && npm run dev        # у другому терміналі: http://localhost:5173
 ```
+
+Без `DATABASE_URL` сервер працює зі сховищем у пам'яті (дані зникають після перезапуску).
+
+Зміна схеми бази: відредагуйте `server/prisma/schema.prisma`, потім `npm run db:migrate -- --name <що_змінено>`
+(створює нову міграцію в `server/prisma/migrations` — її комітять разом зі схемою).
 
 ## Тести
 
 ```bash
-cd server && npm test             # модульні та API-тести
+cd server && npm test             # модульні та API-тести (сховище в пам'яті)
 cd server && npm run test:cov     # з покриттям (пороги в vitest.config.ts)
+
+# ті самі тести на PostgreSQL (так їх запускає CI); база workout_test очищається перед запуском
+docker compose exec db createdb -U app workout_test
+cd server && DATABASE_URL=postgresql://app:<пароль>@localhost:5433/workout_test npm run db:deploy
+TEST_DATABASE_URL=postgresql://app:<пароль>@localhost:5433/workout_test npm test
 cd e2e && npm ci && npx playwright install && npm test   # потрібен запущений застосунок
 ```
 
 ## Документація
 
 - [Вимоги та беклог](docs/requirements.md)
+- [Опис REST API](docs/api.md)
 - Діаграми й макети: `docs/diagrams`, `docs/ui_screens`

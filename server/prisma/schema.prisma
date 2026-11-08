@@ -1,0 +1,117 @@
+// Схема бази даних за ER-діаграмою (рис. 4.7): 7 сутностей.
+// Після зміни схеми: npm run db:migrate -- --name <назва_зміни>
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+  // Розширення .js в імпортах — щоб скомпільований код запускався в Node.js (ESM)
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum WeightUnit {
+  kg
+  lb
+}
+
+enum WorkoutStatus {
+  planned
+  in_progress
+  completed
+  cancelled
+}
+
+model User {
+  id           String     @id @default(uuid())
+  email        String     @unique
+  passwordHash String
+  displayName  String
+  weightUnit   WeightUnit @default(kg)
+  createdAt    DateTime   @default(now())
+
+  exercises Exercise[]
+  programs  Program[]
+  workouts  Workout[]
+}
+
+model MuscleGroup {
+  id   Int    @id
+  name String @unique
+
+  exercises Exercise[]
+}
+
+model Exercise {
+  id            String      @id @default(uuid())
+  name          String
+  muscleGroupId Int
+  ownerId       String? // null — загальна вправа з бібліотеки, інакше — власна вправа користувача
+
+  muscleGroup      MuscleGroup       @relation(fields: [muscleGroupId], references: [id])
+  owner            User?             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  sets             WorkoutSet[]
+  programExercises ProgramExercise[]
+
+  @@index([ownerId])
+}
+
+model Program {
+  id     String @id @default(uuid())
+  userId String
+  name   String
+
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercises ProgramExercise[]
+  workouts  Workout[]
+
+  @@index([userId])
+}
+
+model ProgramExercise {
+  id         String @id @default(uuid())
+  programId  String
+  exerciseId String
+  position   Int
+  targetSets Int
+  targetReps Int
+
+  program  Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
+  exercise Exercise @relation(fields: [exerciseId], references: [id])
+
+  @@unique([programId, position])
+}
+
+model Workout {
+  id         String        @id @default(uuid())
+  userId     String
+  programId  String?
+  status     WorkoutStatus @default(in_progress)
+  startedAt  DateTime      @default(now())
+  finishedAt DateTime?
+
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  program Program?     @relation(fields: [programId], references: [id], onDelete: SetNull)
+  sets    WorkoutSet[]
+
+  @@index([userId, startedAt])
+}
+
+model WorkoutSet {
+  id         String   @id @default(uuid())
+  workoutId  String
+  exerciseId String
+  setNumber  Int
+  weightKg   Decimal  @db.Decimal(6, 2) // вага в базі завжди в кілограмах
+  reps       Int
+  createdAt  DateTime @default(now())
+
+  workout  Workout  @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  exercise Exercise @relation(fields: [exerciseId], references: [id])
+
+  @@unique([workoutId, setNumber])
+  @@index([exerciseId])
+}
