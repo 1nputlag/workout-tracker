@@ -146,3 +146,49 @@ export function useDeleteExercise() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['exercises'] }),
   });
 }
+
+// ---------------- Програми (FR-04) ----------------
+
+export function useProgram(id: string | undefined) {
+  return useQuery({ queryKey: ['program', id], queryFn: () => api<Program>(`/programs/${id}`), enabled: Boolean(id) });
+}
+
+export type ProgramBody = { name: string; items: { exerciseId: string; targetSets: number; targetReps: number }[] };
+
+/** Після зміни програм оновлюємо список, окремі програми та меню «Нове тренування». */
+function useInvalidatePrograms() {
+  const qc = useQueryClient();
+  return () => Promise.all([
+    qc.invalidateQueries({ queryKey: keys.programs }),
+    qc.invalidateQueries({ queryKey: ['program'] }),
+  ]);
+}
+
+export function useSaveProgram() {
+  const invalidate = useInvalidatePrograms();
+  return useMutation({
+    mutationFn: ({ id, ...body }: ProgramBody & { id?: string }) =>
+      api<Program>(id ? `/programs/${id}` : '/programs', { method: id ? 'PATCH' : 'POST', body }),
+    onSuccess: () => invalidate(),
+  });
+}
+
+export function useDeleteProgram() {
+  const qc = useQueryClient();
+  const invalidate = useInvalidatePrograms();
+  return useMutation({
+    mutationFn: (id: string) => api<void>(`/programs/${id}`, { method: 'DELETE' }),
+    // Тренування за видаленою програмою лишаються в історії, але вже без посилання на неї
+    onSuccess: () => Promise.all([invalidate(), qc.invalidateQueries({ queryKey: ['workout'] })]),
+  });
+}
+
+// ---------------- Профіль (FR-02) ----------------
+
+export function useUpdateProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (displayName: string) => api<User>('/profile', { method: 'PATCH', body: { displayName } }),
+    onSuccess: (u) => { qc.setQueryData(['profile'], u); },
+  });
+}

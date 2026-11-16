@@ -22,3 +22,8 @@ export const IconClock = (p: SVGProps<SVGSVGElement>) => <svg {...base(p)}><circ
 export const IconList = (p: SVGProps<SVGSVGElement>) => <svg {...base(p)}><path d="M5 7h14M5 12h14M5 17h9" /></svg>;
 export const IconEdit = (p: SVGProps<SVGSVGElement>) => <svg {...base(p)}><path d="M4 20h4L19 9l-4-4L4 16v4ZM13 7l4 4" /></svg>;
 export const IconX = (p: SVGProps<SVGSVGElement>) => <svg {...base(p)}><path d="M6 6l12 12M18 6 6 18" /></svg>;
+export const IconProgram = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}><rect x="5" y="4" width="14" height="17" rx="2" /><path d="M9 4V2.8h6V4M9 10h6M9 14h6M9 18h3" /></svg>
+);
+export const IconArrowUp = (p: SVGProps<SVGSVGElement>) => <svg {...base(p)}><path d="M12 19V5M6 11l6-6 6 6" /></svg>;
+export const IconArrowDown = (p: SVGProps<SVGSVGElement>) => <svg {...base(p)}><path d="M12 5v14M6 13l6 6 6-6" /></svg>;

@@ -1,16 +1,17 @@
 // Каркас застосунку: верхня панель із навігацією (комп'ютер) і нижня навігація (смартфон, UI-01).
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { initials } from '../lib/format';
 import { usePrograms, useStartWorkout } from '../lib/queries';
 import { errorMessage } from '../lib/api';
 import { Logo } from './Logo';
 import { Menu } from './Menu';
-import { IconChart, IconClock, IconDumbbell, IconList, IconPlus } from './Icons';
+import { IconChart, IconClock, IconDumbbell, IconList, IconPlus, IconProgram } from './Icons';
 
 const NAV = [
   { to: '/', label: 'Головна', icon: IconChart, end: true },
   { to: '/workout', label: 'Тренування', icon: IconDumbbell, end: false },
+  { to: '/programs', label: 'Програми', icon: IconProgram, end: false },
   { to: '/history', label: 'Історія', icon: IconClock, end: false },
   { to: '/exercises', label: 'Вправи', icon: IconList, end: false },
 ];
@@ -45,10 +46,14 @@ export function NewWorkoutButton() {
 
 function AccountMenu() {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const name = user?.displayName ?? '';
   return (
     <Menu
-      items={[{ label: 'Вийти', onSelect: signOut }]}
+      items={[
+        { label: 'Профіль', hint: 'Імʼя та одиниці ваги', onSelect: () => navigate('/profile') },
+        { label: 'Вийти', onSelect: signOut },
+      ]}
       header={user && (
         <div className="mb-1 border-b border-line px-3 pb-3 pt-1">
           <p className="font-semibold">{user.displayName}</p>
@@ -66,17 +71,17 @@ function AccountMenu() {
 
 export function Layout() {
   return (
-    <div className="min-h-dvh pb-24 md:pb-0">
+    <div className="min-h-dvh pb-24 lg:pb-0">
       <header className="sticky top-0 z-20 border-b border-line/70 bg-white">
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 md:h-20 md:gap-8 md:px-10">
           <NavLink to="/" aria-label="Workout — на головну"><Logo compactOnMobile /></NavLink>
-          <nav aria-label="Основна навігація" className="hidden h-full items-stretch gap-1 md:flex">
+          <nav aria-label="Основна навігація" className="hidden h-full items-stretch lg:flex xl:gap-1">
             {NAV.map((n) => (
               <NavLink
                 key={n.to}
                 to={n.to}
                 end={n.end}
-                className={({ isActive }) => `flex items-center border-b-4 px-4 pt-1 text-lg font-medium transition-colors ${isActive ? 'border-lime font-semibold text-ink' : 'border-transparent text-slate hover:text-ink'}`}
+                className={({ isActive }) => `flex items-center border-b-4 px-3 pt-1 font-medium transition-colors xl:px-4 xl:text-lg ${isActive ? 'border-lime font-semibold text-ink' : 'border-transparent text-slate hover:text-ink'}`}
               >
                 {n.label}
               </NavLink>
@@ -93,13 +98,13 @@ export function Layout() {
         <Outlet />
       </main>
 
-      <nav aria-label="Основна навігація" className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-4 border-t border-line bg-white pb-[env(safe-area-inset-bottom)] md:hidden">
+      <nav aria-label="Основна навігація" className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 border-t border-line bg-white pb-[env(safe-area-inset-bottom)] lg:hidden">
         {NAV.map((n) => (
           <NavLink
             key={n.to}
             to={n.to}
             end={n.end}
-            className={({ isActive }) => `flex min-h-16 flex-col items-center justify-center gap-1 border-t-4 text-sm ${isActive ? 'border-lime font-semibold text-ink' : 'border-transparent text-slate'}`}
+            className={({ isActive }) => `flex min-h-16 flex-col items-center justify-center gap-1 border-t-4 text-xs min-[420px]:text-sm ${isActive ? 'border-lime font-semibold text-ink' : 'border-transparent text-slate'}`}
           >
             <n.icon />
             {n.label}

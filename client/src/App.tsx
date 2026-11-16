@@ -8,6 +8,9 @@ import { LoginPage } from './pages/LoginPage';
 import { WorkoutPage, WorkoutStartPage } from './pages/WorkoutPage';
 import { HistoryPage } from './pages/HistoryPage';
 import { ExercisesPage } from './pages/ExercisesPage';
+import { ProgramsPage } from './pages/ProgramsPage';
+import { ProgramEditorPage } from './pages/ProgramEditorPage';
+import { ProfilePage } from './pages/ProfilePage';
 
 // Головна з графіками (Recharts — найбільша залежність) завантажується окремим файлом
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
@@ -39,6 +42,10 @@ export function App() {
           <Route path="workout/:id" element={<WorkoutPage />} />
           <Route path="history" element={<HistoryPage />} />
           <Route path="exercises" element={<ExercisesPage />} />
+          <Route path="programs" element={<ProgramsPage />} />
+          <Route path="programs/new" element={<ProgramEditorPage />} />
+          <Route path="programs/:id" element={<ProgramEditorPage />} />
+          <Route path="profile" element={<ProfilePage />} />
           <Route path="*" element={<EmptyState title="Сторінку не знайдено" text="Перевірте адресу або поверніться на головну." action={<Link to="/" className="btn-dark">На головну</Link>} />} />
         </Route>
       </Route>
