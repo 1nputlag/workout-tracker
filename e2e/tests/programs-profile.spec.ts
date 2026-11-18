@@ -118,7 +118,7 @@ test.describe('Профіль', () => {
 
     await page.getByLabel('Імʼя').fill('Михайло Парандій');
     await page.getByRole('button', { name: 'Зберегти' }).click();
-    await expect(page.getByRole('status')).toHaveText('Зміни збережено');
+    await expect(page.getByRole('status').filter({ hasText: 'Зміни збережено' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Акаунт: Михайло Парандій' })).toHaveText('МП');
     await page.reload();
     await expect(page.getByLabel('Імʼя')).toHaveValue('Михайло Парандій');
