@@ -1,7 +1,18 @@
 import type { ReactNode } from 'react';
 import { errorMessage } from '../lib/api';
+import { useOnline } from '../lib/online';
 
 export function Loading({ label = 'Завантаження…' }: { label?: string }) {
+  // Без мережі запити призупинені: замість нескінченного «Завантаження» пояснюємо, що станеться далі
+  const online = useOnline();
+  if (!online) {
+    return (
+      <div role="status" className="card flex items-center gap-3 p-6 text-slate">
+        <span className="size-2.5 rounded-full bg-danger" aria-hidden />
+        Немає зʼєднання — дані завантажаться автоматично, щойно воно відновиться.
+      </div>
+    );
+  }
   return (
     <div role="status" className="flex items-center gap-3 py-10 text-slate">
       <span className="size-5 animate-spin rounded-full border-2 border-line border-t-ink" aria-hidden />

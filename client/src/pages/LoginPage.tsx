@@ -53,7 +53,7 @@ export function LoginPage() {
 
   return (
     <div className="grid min-h-dvh lg:grid-cols-2">
-      <section className="flex flex-col justify-between gap-10 bg-ink px-6 py-8 text-white md:px-16 md:py-14">
+      <aside aria-label="Про застосунок" className="flex flex-col justify-between gap-10 bg-ink px-6 py-8 text-white md:px-16 md:py-14">
         <Logo inverse />
         <div className="hidden lg:block">
           <p className="h-display text-[7rem] leading-[0.92]">
@@ -68,9 +68,9 @@ export function LoginPage() {
             <li key={t} className="flex items-center gap-3"><IconCheck className="text-lime" />{t}</li>
           ))}
         </ul>
-      </section>
+      </aside>
 
-      <section className="flex items-start justify-center px-4 py-10 md:items-center md:px-10">
+      <main className="flex items-start justify-center px-4 py-10 md:items-center md:px-10">
         <div className="w-full max-w-lg">
           <div role="tablist" aria-label="Вхід або реєстрація" className="mb-8 grid grid-cols-2 gap-1 rounded-md bg-sand p-1">
             {(['login', 'register'] as const).map((m) => (
@@ -141,7 +141,7 @@ export function LoginPage() {
             </p>
           </div>
         </div>
-      </section>
+      </main>
     </div>
   );
 }

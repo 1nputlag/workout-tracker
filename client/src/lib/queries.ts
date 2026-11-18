@@ -2,6 +2,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { api } from './api';
+import { isNetworkError, retryDelay } from './online';
 import type { Exercise, HintResponse, HistoryPage, MuscleGroup, Program, Progress, User, WeightUnit, WorkoutDetail, WorkoutSet } from './types';
 
 export const keys = {
@@ -91,6 +92,11 @@ export function useAddSet(workoutId: string) {
   const invalidate = useInvalidateWorkoutData();
   return useMutation({
     mutationKey: ['add-set', workoutId],
+    // Підходи одного тренування надсилаються строго по черзі — і в звичайному режимі, і після відновлення зʼєднання.
+    // Без мережі мутація призупиняється й продовжується автоматично; короткочасний збій (сервер недоступний) — повторюється.
+    scope: { id: `add-set-${workoutId}` },
+    retry: (count, err) => isNetworkError(err) && count < 4,
+    retryDelay,
     mutationFn: (body: { exerciseId: string; weightKg: number; reps: number }) =>
       api<WorkoutSet>(`/workouts/${workoutId}/sets`, { method: 'POST', body }),
     // Миттєво показуємо підхід у таблиці й підсумку; повні дані (1ПМ, відображувана вага) приходять після оновлення
