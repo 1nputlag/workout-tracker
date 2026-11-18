@@ -71,7 +71,7 @@ jobs:
       - run: npm test
       - run: npm run build
 
-  # 3. Наскрізні тести. Інтерфейс реалізовано (фаза 2), щоб увімкнути:
+  # 3. Навантажувальний і наскрізні тести. Інтерфейс реалізовано (фаза 2), щоб увімкнути:
   #    Settings → Secrets and variables → Actions → Variables → додайте E2E_ENABLED = true
   e2e:
     needs: [server, client]
@@ -90,6 +90,8 @@ jobs:
           cache-dependency-path: e2e/package-lock.json
       - name: Підняти застосунок
         run: docker compose up -d --build --wait
+      - name: Навантажувальний тест (NFR-01)
+        run: node perf/load-test.mjs --base http://localhost:8080
       - name: Встановити Playwright
         working-directory: e2e
         run: |

@@ -140,3 +140,15 @@ describe('Журнал тренування: перегляд, видаленн�
     expect(onlyBench.weeklyTonnage).toEqual(all.weeklyTonnage); // тоннаж і обсяг рахуються за всіма вправами
   });
 });
+
+describe('Одночасні запити', () => {
+  it('TC-API-52: одночасне збереження кількох підходів в одне тренування дає неперервну нумерацію без помилок', async () => {
+    const { app } = setup(); const u = await registerUser(app);
+    const bench = await exerciseId(app, u.token, 'Жим лежачи');
+    const id = await workoutWith(app, u.token, [], false);
+    const res = await Promise.all(Array.from({ length: 12 }, (_, i) =>
+      request(app).post(`/api/workouts/${id}/sets`).set(bearer(u.token)).send({ exerciseId: bench, weightKg: 60 + i, reps: 8 })));
+    expect(res.map((r) => r.status)).toEqual(Array(12).fill(201));
+    expect(res.map((r) => r.body.setNumber).sort((a, b) => a - b)).toEqual(Array.from({ length: 12 }, (_, i) => i + 1));
+  });
+});

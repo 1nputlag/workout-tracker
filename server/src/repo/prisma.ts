@@ -147,8 +147,11 @@ export function createPrismaRepo(db: PrismaClient): Repo {
       return toWorkout(await db.workout.update({ where: { id }, data: { status, finishedAt }, include: setsInclude }));
     },
     async addSet(workoutId, s) {
-      // Номер підходу рахується в транзакції; унікальний індекс (workoutId, setNumber) захищає від дублів
+      // Номер підходу рахується в транзакції. Рядок тренування блокується (SELECT … FOR UPDATE), тому одночасні
+      // запити до одного тренування (подвійне натискання, черга після відновлення зв'язку) отримують номери по черзі,
+      // а не однаковий номер із помилкою унікальності. Запити до різних тренувань одне одного не чекають.
       const row = await db.$transaction(async (tx) => {
+        await tx.$queryRaw`SELECT 1 FROM "Workout" WHERE "id" = ${workoutId} FOR UPDATE`;
         const last = await tx.workoutSet.aggregate({ where: { workoutId }, _max: { setNumber: true } });
         return tx.workoutSet.create({
           data: { workoutId, exerciseId: s.exerciseId, weightKg: s.weightKg, reps: s.reps, setNumber: (last._max.setNumber ?? 0) + 1 },
