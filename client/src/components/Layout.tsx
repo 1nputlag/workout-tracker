@@ -6,6 +6,7 @@ import { usePrograms, useStartWorkout } from '../lib/queries';
 import { errorMessage } from '../lib/api';
 import { Logo } from './Logo';
 import { Menu } from './Menu';
+import { NetworkBanner } from './NetworkBanner';
 import { IconChart, IconClock, IconDumbbell, IconList, IconPlus, IconProgram } from './Icons';
 
 const NAV = [
@@ -92,6 +93,7 @@ export function Layout() {
             <AccountMenu />
           </div>
         </div>
+        <NetworkBanner />
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-6 md:px-10 md:py-12">

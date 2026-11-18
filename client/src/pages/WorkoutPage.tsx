@@ -1,9 +1,10 @@
 // Журнал тренування (UI-02, FR-05): підхід вноситься однією дією, значення попереднього підходу підставляються автоматично.
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { useIsMutating, useQuery } from '@tanstack/react-query';
+import { useIsMutating, useMutationState, useQuery } from '@tanstack/react-query';
 import { ApiError, api, errorMessage } from '../lib/api';
 import { useAuth } from '../lib/auth';
+import { useOnline } from '../lib/online';
 import { clock, dateWithWeekday, durationText, fmtNum, setsText, toDisplay, toKg, unitLabel, unitShort, workoutTitle } from '../lib/format';
 import {
   useAddSet, useDeleteSet, useExercises, useHint, useHistory, useMuscleGroups, useSetUnit, useStartWorkout, useWorkout, useWorkoutTransition,
@@ -206,24 +207,51 @@ function CancelWorkout({ onCancel, busy }: { onCancel: () => void; busy: boolean
   );
 }
 
+type SetBody = { exerciseId: string; weightKg: number; reps: number };
+
+/** Підходи, які ще не дійшли до сервера (немає зʼєднання, сервер недоступний або запит у дорозі), у порядку введення. */
+function usePendingSets(workoutId: string) {
+  return useMutationState({
+    filters: { mutationKey: ['add-set', workoutId], status: 'pending' },
+    select: (m) => ({ body: m.state.variables as SetBody, paused: m.state.isPaused || m.state.failureCount > 0, at: m.state.submittedAt }),
+  });
+}
+
+/** Попередження браузера при спробі закрити вкладку, поки підходи не надіслано (NFR-04: введене не губиться). */
+function useWarnOnLeave(active: boolean) {
+  useEffect(() => {
+    if (!active) return;
+    const onLeave = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+    window.addEventListener('beforeunload', onLeave);
+    return () => window.removeEventListener('beforeunload', onLeave);
+  }, [active]);
+}
+
 function AddSetForm({ workout, unit, exercises, exerciseId, onExerciseChange }: {
   workout: WorkoutDetail; unit: WeightUnit; exercises: Exercise[]; exerciseId?: string; onExerciseChange: (id: string) => void;
 }) {
   const add = useAddSet(workout.id);
+  const online = useOnline();
+  const pending = usePendingSets(workout.id);
+  const queued = pending.filter((p) => p.paused || !online);
+  useWarnOnLeave(pending.length > 0);
   const exercise = exercises.find((e) => e.id === exerciseId);
   const lastHere = [...workout.sets].reverse().find((s) => s.exerciseId === exerciseId);
   // Підстановка: попередній підхід цієї вправи в тренуванні, інакше — останній підхід з історії
-  const prefill = useMemo(() => {
-    const src = lastHere ?? (exercise?.lastSet ? { weightKg: exercise.lastSet.weightKg, reps: exercise.lastSet.reps } : undefined);
-    return src ? { weight: String(toDisplay(src.weightKg, unit)), reps: String(src.reps) } : { weight: '', reps: '' };
-  }, [lastHere, exercise, unit]);
+  const src = lastHere ?? (exercise?.lastSet ? { weightKg: exercise.lastSet.weightKg, reps: exercise.lastSet.reps } : undefined);
+  const prefill = src ? { weight: String(toDisplay(src.weightKg, unit)), reps: String(src.reps) } : { weight: '', reps: '' };
+  // Поля перезаповнюються лише тоді, коли змінилася вправа, збережено новий підхід або змінено одиниці.
+  // Фонове оновлення даних (після відновлення зʼєднання, повернення на вкладку) не стирає те, що користувач уже ввів.
+  const prefillKey = `${exerciseId}|${lastHere?.id ?? (exercise ? 'history' : 'none')}|${unit}`;
   const [weight, setWeight] = useState(prefill.weight);
   const [reps, setReps] = useState(prefill.reps);
   const [errors, setErrors] = useState<{ weight?: string; reps?: string }>({});
-  useEffect(() => { setWeight(prefill.weight); setReps(prefill.reps); setErrors({}); }, [prefill]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- навмисно лише за ключем, див. коментар вище
+  useEffect(() => { setWeight(prefill.weight); setReps(prefill.reps); setErrors({}); }, [prefillKey]);
 
   const step = unit === 'lb' ? 5 : 2.5;
-  const nextNumber = (lastHere ? workout.sets.filter((s) => s.exerciseId === exerciseId).length : 0) + 1;
+  const nextNumber = workout.sets.filter((s) => s.exerciseId === exerciseId).length
+    + pending.filter((p) => p.body.exerciseId === exerciseId).length + 1;
 
   const submit = (ev: FormEvent) => {
     ev.preventDefault();
@@ -254,9 +282,23 @@ function AddSetForm({ workout, unit, exercises, exerciseId, onExerciseChange }: 
           inputMode="decimal" onDec={() => setWeight(bump(weight, -step, 0))} onInc={() => setWeight(bump(weight, step, 0))} decLabel="Зменшити вагу" incLabel="Збільшити вагу" />
         <Stepper id="set-reps" label="Повторення" value={reps} onChange={setReps} error={errors.reps}
           inputMode="numeric" onDec={() => setReps(bump(reps, -1, 1))} onInc={() => setReps(bump(reps, 1, 1))} decLabel="Менше повторень" incLabel="Більше повторень" />
-        <button type="submit" className="btn-lime col-span-2 min-h-14 text-lg md:col-span-1 md:mt-7" disabled={add.isPending || !exerciseId}>Зберегти підхід</button>
+        <button type="submit" className="btn-lime col-span-2 min-h-14 text-lg md:col-span-1 md:mt-7" disabled={(add.isPending && !add.isPaused) || !exerciseId}>Зберегти підхід</button>
       </div>
       {add.isError && <p role="alert" className="mt-3 font-medium text-danger">{errorMessage(add.error)}</p>}
+      {queued.length > 0 && (
+        <div className="mt-4 rounded-md border-2 border-dashed border-ink/40 bg-white p-4">
+          <p className="font-semibold">Очікують надсилання: {setsText(queued.length)}</p>
+          <p className="text-sm text-slate">Підходи збережено на цьому пристрої й буде надіслано по черзі, щойно зʼєднання відновиться. Не закривайте вкладку.</p>
+          <ol className="mt-2">
+            {queued.map((p) => (
+              <li key={p.at} data-testid="pending-set" className="flex justify-between gap-3 border-t border-line/70 py-2">
+                <span>{exercises.find((e) => e.id === p.body.exerciseId)?.name ?? 'Вправа'}</span>
+                <span className="font-display text-xl font-bold">{fmtNum(toDisplay(p.body.weightKg, unit))} × {p.body.reps}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
       <p className="mt-3 text-sm text-slate">Поля заповнені значеннями попереднього підходу — вводьте лише зміни.</p>
     </form>
   );
